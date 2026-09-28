@@ -1,7 +1,6 @@
 package com.example.smartpantry;
 
 import android.os.Bundle;
-import android.content.Intent;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +24,7 @@ public class AddEditIngredientActivity extends AppCompatActivity {
 
  @Override
  protected void onCreate(Bundle b) {
+
   super.onCreate(b);
 
   setContentView(R.layout.activity_add_edit);
@@ -64,15 +64,32 @@ public class AddEditIngredientActivity extends AppCompatActivity {
 
  private void save() {
 
-  String n = name.getText().toString().trim();
-  String q = qty.getText().toString().trim();
-  String u = unit.getText().toString().trim();
-  String e = expiry.getText().toString().trim().replace(" ", "");
+  String n = name.getText()
+          .toString()
+          .trim()
+          .replaceAll("\\s+", " ");
+
+  String q = qty.getText()
+          .toString()
+          .trim();
+
+  String u = unit.getText()
+          .toString()
+          .trim()
+          .replaceAll("\\s+", " ");
+
+  String e = expiry.getText()
+          .toString()
+          .trim()
+          .replace(" ", "");
 
   // Validate ingredient name
   if (n.isEmpty()) {
 
-   name.setError("Ingredient name is required");
+   name.setError(
+           "Ingredient name is required"
+   );
+
    name.requestFocus();
 
    return;
@@ -81,7 +98,10 @@ public class AddEditIngredientActivity extends AppCompatActivity {
   // Validate quantity
   if (q.isEmpty()) {
 
-   qty.setError("Quantity is required");
+   qty.setError(
+           "Quantity is required"
+   );
+
    qty.requestFocus();
 
    return;
@@ -94,14 +114,22 @@ public class AddEditIngredientActivity extends AppCompatActivity {
    amount = Double.parseDouble(q);
 
    if (amount <= 0) {
-    qty.setError("Quantity must be greater than 0");
+
+    qty.setError(
+            "Quantity must be greater than 0"
+    );
+
     qty.requestFocus();
+
     return;
    }
 
   } catch (NumberFormatException ex) {
 
-   qty.setError("Enter a valid number");
+   qty.setError(
+           "Enter a valid number"
+   );
+
    qty.requestFocus();
 
    return;
@@ -110,7 +138,10 @@ public class AddEditIngredientActivity extends AppCompatActivity {
   // Validate unit
   if (u.isEmpty()) {
 
-   unit.setError("Unit is required");
+   unit.setError(
+           "Unit is required"
+   );
+
    unit.requestFocus();
 
    return;
@@ -121,7 +152,10 @@ public class AddEditIngredientActivity extends AppCompatActivity {
 
    if (!isValidDate(e)) {
 
-    expiry.setError("Enter a valid date such as 2026-12-25");
+    expiry.setError(
+            "Enter a valid date such as 2026-12-25"
+    );
+
     expiry.requestFocus();
 
     return;
@@ -159,7 +193,10 @@ public class AddEditIngredientActivity extends AppCompatActivity {
  private boolean isValidDate(String date) {
 
   SimpleDateFormat format =
-          new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+          new SimpleDateFormat(
+                  "yyyy-MM-dd",
+                  Locale.getDefault()
+          );
 
   format.setLenient(false);
 
