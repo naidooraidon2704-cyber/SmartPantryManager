@@ -67,7 +67,7 @@ public class AddEditIngredientActivity extends AppCompatActivity {
   String n = name.getText().toString().trim();
   String q = qty.getText().toString().trim();
   String u = unit.getText().toString().trim();
-  String e = expiry.getText().toString().trim();
+  String e = expiry.getText().toString().trim().replace(" ", "");
 
   // Validate ingredient name
   if (n.isEmpty()) {
@@ -121,7 +121,7 @@ public class AddEditIngredientActivity extends AppCompatActivity {
 
    if (!isValidDate(e)) {
 
-    expiry.setError("Use a valid date in YYYY-MM-DD format");
+    expiry.setError("Enter a valid date such as 2026-12-25");
     expiry.requestFocus();
 
     return;
