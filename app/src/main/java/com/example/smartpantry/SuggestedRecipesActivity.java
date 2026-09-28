@@ -21,20 +21,35 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
 
  @Override
  protected void onCreate(Bundle savedInstanceState) {
+
   super.onCreate(savedInstanceState);
+
   setContentView(R.layout.activity_recipes);
 
   db = new DatabaseHelper(this);
 
-  recyclerView = findViewById(R.id.recyclerRecipes);
-  messageText = findViewById(R.id.txtRecipeMessage);
+  recyclerView = findViewById(
+          R.id.recyclerRecipes
+  );
 
-  View btnBack = findViewById(R.id.btnBack);
+  messageText = findViewById(
+          R.id.txtRecipeMessage
+  );
+
+  View btnBack = findViewById(
+          R.id.btnBack
+  );
+
   if (btnBack != null) {
-   btnBack.setOnClickListener(v -> finish());
+
+   btnBack.setOnClickListener(
+           v -> finish()
+   );
   }
 
-  recyclerView.setLayoutManager(new LinearLayoutManager(this));
+  recyclerView.setLayoutManager(
+          new LinearLayoutManager(this)
+  );
 
   loadSuggestedRecipes();
  }
@@ -42,29 +57,48 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
  /**
   * Loads ONLY recipes that the user can make completely.
   *
-  * IMPORTANT:
-  * A recipe is shown only when EVERY required ingredient
-  * is present in the pantry in a sufficient quantity.
+  * Every required ingredient must exist
+  * in a sufficient quantity.
   */
  private void loadSuggestedRecipes() {
 
-  List<Recipe> allRecipes = db.getRecipes();
-  List<PantryItem> pantry = db.getPantry();
+  List<Recipe> allRecipes =
+          db.getRecipes();
 
-  List<Recipe> matchingRecipes = new ArrayList<>();
+  List<PantryItem> pantry =
+          db.getPantry();
+
+  List<Recipe> matchingRecipes =
+          new ArrayList<>();
 
   for (Recipe recipe : allRecipes) {
 
    if (canMakeRecipe(recipe, pantry)) {
+
     matchingRecipes.add(recipe);
    }
   }
 
-  RecipeAdapter adapter = new RecipeAdapter(matchingRecipes, recipe -> {
-   Intent intent = new Intent(SuggestedRecipesActivity.this, RecipeDetailActivity.class);
-   intent.putExtra("id", recipe.id);
-   startActivity(intent);
-  });
+  RecipeAdapter adapter =
+          new RecipeAdapter(
+                  matchingRecipes,
+                  recipe -> {
+
+                   Intent intent =
+                           new Intent(
+                                   SuggestedRecipesActivity.this,
+                                   RecipeDetailActivity.class
+                           );
+
+                   intent.putExtra(
+                           "id",
+                           recipe.id
+                   );
+
+                   startActivity(intent);
+                  }
+          );
+
   recyclerView.setAdapter(adapter);
 
   if (matchingRecipes.isEmpty()) {
@@ -74,17 +108,34 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
                    "Add more ingredients to make more recipes."
    );
 
-   messageText.setVisibility(TextView.VISIBLE);
-   recyclerView.setVisibility(RecyclerView.GONE);
+   messageText.setVisibility(
+           TextView.VISIBLE
+   );
+
+   recyclerView.setVisibility(
+           RecyclerView.GONE
+   );
 
   } else {
 
+   String recipeCountText =
+           matchingRecipes.size() == 1
+                   ? "1 recipe can be made with your pantry."
+                   : matchingRecipes.size() +
+                     " recipes can be made with your pantry.";
+
    messageText.setText(
-           "Only recipes you can make right now are shown."
+           recipeCountText +
+                   "\n\nOnly recipes you can make right now are shown."
    );
 
-   messageText.setVisibility(TextView.VISIBLE);
-   recyclerView.setVisibility(RecyclerView.VISIBLE);
+   messageText.setVisibility(
+           TextView.VISIBLE
+   );
+
+   recyclerView.setVisibility(
+           RecyclerView.VISIBLE
+   );
   }
  }
 
@@ -93,105 +144,134 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
   *
   * A recipe can only be suggested when:
   *
-  * 1. Every required ingredient exists in the pantry.
-  * 2. The pantry quantity is at least the required quantity.
+  * 1. Every required ingredient exists.
+  * 2. The pantry quantity is sufficient.
   * 3. Units are compatible or convertible.
-  *
-  * Partial matches are NEVER accepted.
   */
- private boolean canMakeRecipe(Recipe recipe, List<PantryItem> pantry) {
+ private boolean canMakeRecipe(
+         Recipe recipe,
+         List<PantryItem> pantry) {
 
-  for (RecipeIngredient required : recipe.ingredients) {
+  for (RecipeIngredient required :
+          recipe.ingredients) {
 
    double availableQuantity = 0;
 
-   for (PantryItem pantryItem : pantry) {
+   String requiredName =
+           normalizeIngredientName(
+                   required.name
+           );
 
-    String pantryName = normalizeIngredientName(pantryItem.name);
-    String requiredName = normalizeIngredientName(required.name);
+   for (PantryItem pantryItem :
+           pantry) {
 
-    if (!pantryName.equals(requiredName)) {
+    String pantryName =
+            normalizeIngredientName(
+                    pantryItem.name
+            );
+
+    if (!pantryName.equals(
+            requiredName)) {
+
      continue;
     }
 
-    if (!unitCompatible(pantryItem.unit, required.unit)) {
-     continue;
-    }
-
-    availableQuantity += convertQuantity(
-            pantryItem.quantity,
+    if (!unitCompatible(
             pantryItem.unit,
-            required.unit
-    );
+            required.unit)) {
+
+     continue;
+    }
+
+    availableQuantity +=
+            convertQuantity(
+                    pantryItem.quantity,
+                    pantryItem.unit,
+                    required.unit
+            );
    }
 
    /*
-    * If the ingredient does not exist OR there is not
-    * enough of it, the ENTIRE recipe fails.
+    * If the ingredient does not exist
+    * or there is not enough of it,
+    * the entire recipe fails.
     */
-   if (availableQuantity + 0.000001 < required.quantity) {
+   if (availableQuantity + 0.000001 <
+           required.quantity) {
+
     return false;
    }
   }
 
-  /*
-   * Every required ingredient passed.
-   * Therefore the recipe can be made completely.
-   */
   return true;
  }
 
  /**
-  * Makes simple ingredient variations match.
-  *
-  * Examples:
-  * tomato     -> tomato
-  * tomatoes   -> tomato
-  * potato     -> potato
-  * potatoes   -> potato
-  * onion      -> onion
-  * onions     -> onion
+  * Normalises simple ingredient variations.
   */
- private String normalizeIngredientName(String name) {
+ private String normalizeIngredientName(
+         String name) {
 
   if (name == null) {
+
    return "";
   }
 
-  String value = name
-          .toLowerCase(Locale.ROOT)
-          .trim()
-          .replaceAll("\\s+", " ");
+  String value =
+          name.toLowerCase(Locale.ROOT)
+                  .trim()
+                  .replaceAll(
+                          "\\s+",
+                          " "
+                  );
 
-  // Remove punctuation that could cause trivial mismatches.
-  value = value.replaceAll("[^a-z0-9 ]", "");
+  value =
+          value.replaceAll(
+                  "[^a-z0-9 ]",
+                  ""
+          );
 
-  // Common plural: tomatoes -> tomato
-  if (value.endsWith("ies") && value.length() > 3) {
-   value = value.substring(0, value.length() - 3) + "y";
-  }
+  if (value.endsWith("ies")
+          && value.length() > 3) {
 
-  // potatoes -> potato
-  else if (value.endsWith("oes") && value.length() > 3) {
-   value = value.substring(0, value.length() - 2);
-  }
+   value =
+           value.substring(
+                   0,
+                   value.length() - 3
+           ) + "y";
 
-  // dishes -> dish
-  else if (value.endsWith("ses")
-          || value.endsWith("xes")
-          || value.endsWith("zes")
-          || value.endsWith("ches")
-          || value.endsWith("shes")) {
+  } else if (value.endsWith("oes")
+          && value.length() > 3) {
 
-   value = value.substring(0, value.length() - 2);
-  }
+   value =
+           value.substring(
+                   0,
+                   value.length() - 2
+           );
 
-  // General plural: eggs -> egg
-  else if (value.endsWith("s")
-          && !value.endsWith("ss")
-          && value.length() > 2) {
+  } else if (
+          value.endsWith("ses")
+                  || value.endsWith("xes")
+                  || value.endsWith("zes")
+                  || value.endsWith("ches")
+                  || value.endsWith("shes")) {
 
-   value = value.substring(0, value.length() - 1);
+   value =
+           value.substring(
+                   0,
+                   value.length() - 2
+           );
+
+  } else if (
+          value.endsWith("s")
+                  && !value.endsWith("ss")
+                  && value.length() > 2) {
+
+   value =
+           value.substring(
+                   0,
+                   value.length() - 1
+           );
   }
 
   return value;
@@ -200,24 +280,34 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
  /**
   * Checks whether two units can be compared.
   */
- private boolean unitCompatible(String pantryUnit, String requiredUnit) {
+ private boolean unitCompatible(
+         String pantryUnit,
+         String requiredUnit) {
 
-  String pantry = normalizeUnit(pantryUnit);
-  String required = normalizeUnit(requiredUnit);
+  String pantry =
+          normalizeUnit(pantryUnit);
+
+  String required =
+          normalizeUnit(requiredUnit);
 
   if (pantry.equals(required)) {
+
    return true;
   }
 
-  // Weight conversion
-  if ((pantry.equals("g") || pantry.equals("kg"))
-          && (required.equals("g") || required.equals("kg"))) {
+  if ((pantry.equals("g")
+          || pantry.equals("kg"))
+          && (required.equals("g")
+          || required.equals("kg"))) {
+
    return true;
   }
 
-  // Volume conversion
-  if ((pantry.equals("ml") || pantry.equals("l"))
-          && (required.equals("ml") || required.equals("l"))) {
+  if ((pantry.equals("ml")
+          || pantry.equals("l"))
+          && (required.equals("ml")
+          || required.equals("l"))) {
+
    return true;
   }
 
@@ -225,60 +315,65 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
  }
 
  /**
-  * Converts the pantry quantity into the recipe's required unit.
+  * Converts pantry quantities into
+  * the recipe's required unit.
   */
  private double convertQuantity(
          double quantity,
          String fromUnit,
          String toUnit) {
 
-  String from = normalizeUnit(fromUnit);
-  String to = normalizeUnit(toUnit);
+  String from =
+          normalizeUnit(fromUnit);
+
+  String to =
+          normalizeUnit(toUnit);
 
   if (from.equals(to)) {
+
    return quantity;
   }
 
-  // kg -> g
-  if (from.equals("kg") && to.equals("g")) {
+  if (from.equals("kg")
+          && to.equals("g")) {
+
    return quantity * 1000.0;
   }
 
-  // g -> kg
-  if (from.equals("g") && to.equals("kg")) {
+  if (from.equals("g")
+          && to.equals("kg")) {
+
    return quantity / 1000.0;
   }
 
-  // L -> ml
-  if (from.equals("l") && to.equals("ml")) {
+  if (from.equals("l")
+          && to.equals("ml")) {
+
    return quantity * 1000.0;
   }
 
-  // ml -> L
-  if (from.equals("ml") && to.equals("l")) {
+  if (from.equals("ml")
+          && to.equals("l")) {
+
    return quantity / 1000.0;
   }
 
-  /*
-   * This should only be reached when the units are already
-   * considered compatible. Returning zero is safer than
-   * incorrectly treating incompatible units as equal.
-   */
   return 0;
  }
 
  /**
-  * Normalises common ways of writing units.
+  * Normalises common unit names.
   */
  private String normalizeUnit(String unit) {
 
   if (unit == null) {
+
    return "";
   }
 
-  String value = unit
-          .toLowerCase(Locale.ROOT)
-          .trim();
+  String value =
+          unit.toLowerCase(Locale.ROOT)
+                  .trim();
 
   switch (value) {
 
