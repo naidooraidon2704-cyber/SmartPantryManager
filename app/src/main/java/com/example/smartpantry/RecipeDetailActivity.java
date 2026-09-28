@@ -1,0 +1,5 @@
+package com.example.smartpantry;
+import android.os.*;import android.widget.*;import androidx.appcompat.app.AppCompatActivity;
+public class RecipeDetailActivity extends AppCompatActivity{
+ protected void onCreate(Bundle b){super.onCreate(b);setContentView(R.layout.activity_recipe_detail);DatabaseHelper db=new DatabaseHelper(this);long id=getIntent().getLongExtra("id",-1);Recipe r=null;for(Recipe x:db.getRecipes())if(x.id==id)r=x;if(r==null){finish();return;}((TextView)findViewById(R.id.txtDetailName)).setText(r.name);StringBuilder s=new StringBuilder();for(RecipeIngredient i:r.ingredients)s.append("• ").append(i.quantity).append(" ").append(i.unit).append(" ").append(i.name).append("\n");((TextView)findViewById(R.id.txtIngredients)).setText(s.toString());((TextView)findViewById(R.id.txtMethod)).setText(r.instructions);findViewById(R.id.btnBackDetail).setOnClickListener(v->finish());}
+}

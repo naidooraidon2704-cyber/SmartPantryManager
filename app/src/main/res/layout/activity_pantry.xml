@@ -1,0 +1,10 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:padding="16dp" android:background="@color/cream" android:layout_width="match_parent" android:layout_height="match_parent">
+ <TextView android:text="My Pantry" android:textSize="28sp" android:textStyle="bold" android:textColor="@color/dark_green" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+ <TextView android:text="Ingredients currently available at home" android:textSize="14sp" android:layout_marginBottom="12dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+ <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerPantry" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+ <Button android:id="@+id/btnAdd" android:text="+ Add Ingredient" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+ <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+  <Button android:id="@+id/btnRecipes" android:text="Suggested Recipes" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
+  <Button android:id="@+id/btnSettings" android:text="Settings" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
+ </LinearLayout>
+</LinearLayout>

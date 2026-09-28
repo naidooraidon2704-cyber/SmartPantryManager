@@ -1,0 +1,6 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:padding="16dp" android:background="@color/cream" android:layout_width="match_parent" android:layout_height="match_parent">
+ <TextView android:text="Suggested Recipes" android:textSize="28sp" android:textStyle="bold" android:textColor="@color/dark_green" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+ <TextView android:id="@+id/txtRecipeMessage" android:text="Only recipes you can make right now are shown." android:layout_marginBottom="12dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+ <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerRecipes" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+ <Button android:id="@+id/btnBack" android:text="Back to Pantry" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>

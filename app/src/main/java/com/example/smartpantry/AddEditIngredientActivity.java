@@ -1,0 +1,9 @@
+package com.example.smartpantry;
+import android.os.*;import android.content.*;import android.widget.*;import androidx.appcompat.app.AppCompatActivity;
+public class AddEditIngredientActivity extends AppCompatActivity{
+ DatabaseHelper db;long id=-1;EditText name,qty,unit,expiry;
+ protected void onCreate(Bundle b){super.onCreate(b);setContentView(R.layout.activity_add_edit);db=new DatabaseHelper(this);name=findViewById(R.id.edtName);qty=findViewById(R.id.edtQuantity);unit=findViewById(R.id.edtUnit);expiry=findViewById(R.id.edtExpiry);
+ if(getIntent().hasExtra("id")){id=getIntent().getLongExtra("id",-1);PantryItem x=db.getPantry(id);if(x!=null){((TextView)findViewById(R.id.txtTitle)).setText("Edit Ingredient");name.setText(x.name);qty.setText(String.valueOf(x.quantity));unit.setText(x.unit);expiry.setText(x.expiryDate);}}
+ findViewById(R.id.btnSave).setOnClickListener(v->save());findViewById(R.id.btnCancel).setOnClickListener(v->finish());}
+ void save(){String n=name.getText().toString().trim(),q=qty.getText().toString().trim(),u=unit.getText().toString().trim(),e=expiry.getText().toString().trim();if(n.isEmpty()){name.setError("Ingredient name is required");return;}if(q.isEmpty()){qty.setError("Quantity is required");return;}if(u.isEmpty()){unit.setError("Unit is required");return;}double amount;try{amount=Double.parseDouble(q);if(amount<=0)throw new Exception();}catch(Exception ex){qty.setError("Enter a quantity greater than 0");return;}if(!e.isEmpty()&&!e.matches("\\d{4}-\\d{2}-\\d{2}")){expiry.setError("Use YYYY-MM-DD");return;}PantryItem x=new PantryItem(id,n,amount,u,e);if(id<0)db.insertPantry(x);else db.updatePantry(x);finish();}
+}
